@@ -16,7 +16,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    'rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95';
+    'rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95';
 
   const variantStyles = {
     primary: 'bg-primary text-white hover:bg-primary-dark shadow-lg',
