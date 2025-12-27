@@ -40,7 +40,7 @@ export function PassengerForm({
     } else if (
       !/^[0-9]{10,13}$/.test(formData.passengerPhone.replace(/\D/g, ''))
     ) {
-      newErrors.passengerPhone = 'No. HP tidak valid (10-13 digit)';
+      newErrors.passengerPhone = 'No. HP tidak valid (harus 10-13 digit)';
     }
 
     setErrors(newErrors);
@@ -70,7 +70,6 @@ export function PassengerForm({
         </button>
         <div>
           <h2>Data Penumpang</h2>
-          <p className="text-gray-600">Isi data untuk pemesanan</p>
         </div>
       </div>
 
