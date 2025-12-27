@@ -12,6 +12,7 @@ server/node_modules
 dist
 dist-ssr
 *.local
+client/.vite/deps
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +25,5 @@ dist-ssr
 *.sln
 *.sw?
 *.env
+.env.local
+.env.*.local
