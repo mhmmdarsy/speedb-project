@@ -1,4 +1,4 @@
-import { Booking } from '../../types';
+import type { Booking } from '../../types';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { CheckCircle, MapPin, Calendar, Clock, Users, Ticket } from 'lucide-react';

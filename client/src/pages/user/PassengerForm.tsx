@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Route, Schedule, BookingFormData } from '../../types';
+import type { Route, Schedule, BookingFormData } from '../../types';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Card } from '../../components/Card';

@@ -1,31 +1,19 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, MapPin, Clock } from 'lucide-react';
-import { projectId, publicAnonKey } from '../../../../client/utils/supabase';
-import { createClient } from '@supabase/supabase-js';
-import { Button } from '../../../../client/components/common/Button';
-import { Card } from '../../../../client/components/common/Card';
-import { Input } from '../../../../client/components/common/Input';
+import { supabase, projectId } from '../../../lib/supabase';
+import { Button } from '../../../components/Button';
+import { Card } from '../../../components/Card';
+import { Input } from '../../../components/Input';
+import type { Route } from '../../../types';
 
-interface Route {
-  id: string;
-  origin: string;
-  destination: string;
-  price: number;
-  duration: string;
-  isActive: boolean;
-}
+const API_BASE_URL = 'http://localhost:3000/api';
 
 interface RoutesManagementProps {
   routes: Route[];
-  accessToken: string;
   onRefresh: () => void;
 }
 
-export function RoutesManagement({
-  routes,
-  accessToken,
-  onRefresh,
-}: RoutesManagementProps) {
+export function RoutesManagement({ routes, onRefresh }: RoutesManagementProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingRoute, setEditingRoute] = useState<Route | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,11 +28,6 @@ export function RoutesManagement({
 
   // Helper to get fresh token
   const getFreshToken = async (): Promise<string> => {
-    const supabase = createClient(
-      `https://${projectId}.supabase.co`,
-      publicAnonKey,
-    );
-
     const { data, error } = await supabase.auth.getSession();
 
     if (error || !data.session) {
@@ -83,12 +66,12 @@ export function RoutesManagement({
     setLoading(true);
 
     try {
-      // Get fresh token
+      // Ambil access token Supabase (INI BENAR)
       const token = await getFreshToken();
 
       const url = editingRoute
-        ? `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/routes/${editingRoute.id}`
-        : `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/routes`;
+        ? `${API_BASE_URL}/admin/routes/${editingRoute.id}`
+        : `${API_BASE_URL}/admin/routes`;
 
       const method = editingRoute ? 'PUT' : 'POST';
 
@@ -96,12 +79,12 @@ export function RoutesManagement({
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // JWT user
         },
         body: JSON.stringify({
           origin: formData.origin,
           destination: formData.destination,
-          price: parseInt(formData.price),
+          price: Number(formData.price),
           duration: formData.duration,
           isActive: formData.isActive,
         }),
@@ -111,15 +94,20 @@ export function RoutesManagement({
         const errorData = await response
           .json()
           .catch(() => ({ error: 'Unknown error' }));
+
         console.error('Server error response:', errorData);
         throw new Error(errorData.error || 'Failed to save route');
       }
 
       resetForm();
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving route:', error);
-      alert(`Gagal menyimpan rute: ${error.message}`);
+      alert(
+        `Gagal menyimpan rute: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      );
     } finally {
       setLoading(false);
     }
@@ -136,24 +124,25 @@ export function RoutesManagement({
       // Get fresh token
       const token = await getFreshToken();
 
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/routes/${routeId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_BASE_URL}/admin/routes/${routeId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       if (!response.ok) {
         throw new Error('Failed to delete route');
       }
 
       onRefresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting route:', error);
-      alert(`Gagal menghapus rute: ${error.message}`);
+      alert(
+        `Gagal menghapus rute: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+      );
     } finally {
       setLoading(false);
     }
@@ -315,6 +304,8 @@ export function RoutesManagement({
 
                 <div className="flex gap-2 ml-4">
                   <button
+                    aria-label="Edit route"
+                    title="Edit route"
                     onClick={() => handleEdit(route)}
                     className="p-3 hover:bg-primary/10 rounded-lg transition-colors"
                     disabled={loading}
@@ -322,6 +313,8 @@ export function RoutesManagement({
                     <Edit2 className="w-5 h-5 text-primary" />
                   </button>
                   <button
+                    aria-label="Delete route"
+                    title="Delete route"
                     onClick={() => handleDelete(route.id)}
                     className="p-3 hover:bg-error/10 rounded-lg transition-colors"
                     disabled={loading}

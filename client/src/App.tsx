@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase, projectId, publicAnonKey } from './lib/supabase';
-import { Route, Schedule, Booking, BookingFormData } from './types';
+import type { Route, Schedule, Booking, BookingFormData } from './types';
 import { ProgressSteps } from './components/ProgressSteps';
 import { RouteSelection } from './pages/user/RouteSelection';
 import { ScheduleSelection } from './pages/user/ScheduleSelection';
@@ -11,9 +11,15 @@ import { Register } from './pages/admin/Register';
 import { Dashboard } from './pages/admin/Dashboard';
 import { Settings } from 'lucide-react';
 
+const API_BASE_URL = 'http://localhost:3000/api';
+
 declare global {
   interface Window {
-    snap: any;
+    snap:
+      | {
+          pay: (token: string, options?: Record<string, unknown>) => void;
+        }
+      | undefined;
   }
 }
 
@@ -86,6 +92,7 @@ export default function App() {
     const { data, error } = await supabase.auth.getSession();
 
     if (error || !data.session) {
+      console.error('Session expired or invalid:', error);
       // Session expired, force logout
       handleAdminLogout();
       throw new Error('Session expired. Please login again.');
@@ -99,49 +106,35 @@ export default function App() {
 
   const fetchRoutes = async () => {
     try {
-      console.log('Fetching routes...');
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/routes`,
-        {
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-        },
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Routes fetched:', data.routes);
-        setRoutes(data.routes || []);
-      } else {
-        console.error(
-          'Failed to fetch routes:',
-          response.status,
-          response.statusText,
-        );
+      const response = await fetch(`${API_BASE_URL}/routes`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch routes');
       }
+
+      const data = await response.json();
+
+      const mappedRoutes = (data.routes || []).map((r: Route & { is_active?: boolean }) => ({
+        ...r,
+        isActive: r.is_active,
+      }));
+
+      setRoutes(mappedRoutes);
     } catch (error) {
       console.error('Error fetching routes:', error);
-    } finally {
-      setInitialLoading(false);
+      setRoutes([]);
     }
   };
 
   const fetchSchedules = async () => {
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/schedules`,
-        {
-          headers: {
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/schedules`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setSchedules(data.schedules || []);
+      if (!response.ok) {
+        throw new Error('Failed to fetch schedules');
       }
+
+      const data = await response.json();
+      setSchedules(data.schedules || []);
     } catch (error) {
       console.error('Error fetching schedules:', error);
     }
@@ -149,29 +142,26 @@ export default function App() {
 
   const fetchBookings = async () => {
     try {
-      // Get fresh token for admin requests
       const token = await getFreshAccessToken();
 
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/bookings`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_BASE_URL}/admin/bookings`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
-      if (response.status === 401) {
-        // Unauthorized - force logout
-        alert('Session expired. Please login again.');
+      if (response.status === 401 || response.status === 403) {
+        alert('Session expired atau tidak punya akses.');
         handleAdminLogout();
         return;
       }
 
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data.bookings || []);
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookings');
       }
+
+      const data = await response.json();
+      setBookings(data.bookings || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     }
@@ -190,6 +180,8 @@ export default function App() {
       email,
       password,
     });
+
+    // const token = data.session.access_token;
 
     if (error) {
       throw new Error(error.message);
@@ -256,28 +248,24 @@ export default function App() {
 
     try {
       // Create booking
-      const bookingResponse = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/bookings`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            routeId: selectedRoute.id,
-            scheduleId: selectedSchedule.id,
-            passengerName: formData.passengerName,
-            passengerPhone: formData.passengerPhone,
-            passengers: selectedPassengers,
-            totalPrice: selectedRoute.price * selectedPassengers,
-            origin: selectedRoute.origin,
-            destination: selectedRoute.destination,
-            departureTime: selectedSchedule.departureTime,
-            date: selectedSchedule.date,
-          }),
+      const bookingResponse = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          routeId: selectedRoute.id,
+          scheduleId: selectedSchedule.id,
+          passengerName: formData.passengerName,
+          passengerPhone: formData.passengerPhone,
+          passengers: selectedPassengers,
+          totalPrice: selectedRoute.price * selectedPassengers,
+          origin: selectedRoute.origin,
+          destination: selectedRoute.destination,
+          departureTime: selectedSchedule.departureTime,
+          date: selectedSchedule.date,
+        }),
+      });
 
       if (!bookingResponse.ok) {
         throw new Error('Failed to create booking');
@@ -286,24 +274,20 @@ export default function App() {
       const bookingData = await bookingResponse.json();
 
       // Create payment
-      const paymentResponse = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/payment/create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${publicAnonKey}`,
-          },
-          body: JSON.stringify({
-            bookingId: bookingData.bookingId,
-            amount: selectedRoute.price * selectedPassengers,
-            customerDetails: {
-              first_name: formData.passengerName,
-              phone: formData.passengerPhone,
-            },
-          }),
+      const paymentResponse = await fetch(`${API_BASE_URL}/payment/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          bookingId: bookingData.booking.id,
+          amount: selectedRoute.price * selectedPassengers,
+          customerDetails: {
+            first_name: formData.passengerName,
+            phone: formData.passengerPhone,
+          },
+        }),
+      });
 
       if (!paymentResponse.ok) {
         throw new Error('Failed to create payment');
@@ -317,12 +301,11 @@ export default function App() {
           onSuccess: async () => {
             // Update booking status
             await fetch(
-              `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/bookings/${bookingData.bookingId}/status`,
+              `${API_BASE_URL}/bookings/${bookingData.booking.id}/status`,
               {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${publicAnonKey}`,
                 },
                 body: JSON.stringify({ status: 'paid' }),
               },
@@ -330,12 +313,7 @@ export default function App() {
 
             // Fetch the updated booking
             const bookingDetailResponse = await fetch(
-              `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/bookings/${bookingData.bookingId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${publicAnonKey}`,
-                },
-              },
+              `${API_BASE_URL}/bookings/${bookingData.booking.id}`,
             );
 
             if (bookingDetailResponse.ok) {
@@ -400,9 +378,9 @@ export default function App() {
         bookings={bookings}
         routes={routes}
         schedules={schedules}
-        accessToken={accessToken}
         onLogout={handleAdminLogout}
         onRefresh={handleRefreshData}
+        accessToken={accessToken}
       />
     );
   }
