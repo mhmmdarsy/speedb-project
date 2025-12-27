@@ -80,7 +80,7 @@ export function UserBookingLayout({
   }[bookingStep];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-white shadow-sm border-b px-4 py-4 flex place-content-end">
         <button

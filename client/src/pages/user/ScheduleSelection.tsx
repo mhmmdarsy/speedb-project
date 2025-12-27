@@ -4,6 +4,7 @@ import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Clock, Users, ChevronLeft } from 'lucide-react';
 
+// Props for ScheduleSelection component
 interface ScheduleSelectionProps {
   route: Route;
   schedules: Schedule[];
@@ -11,6 +12,7 @@ interface ScheduleSelectionProps {
   onBack: () => void;
 }
 
+// ScheduleSelection component
 export function ScheduleSelection({
   route,
   schedules,
@@ -30,10 +32,12 @@ export function ScheduleSelection({
     return date.toISOString().split('T')[0];
   });
 
+  // Filter available dates for the selected route
   const availableDates = new Set(
     schedules.filter((s) => s.routeId === route.id).map((s) => s.date),
   );
 
+  // Filter available schedules for the selected route and date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const days = [
@@ -89,17 +93,25 @@ export function ScheduleSelection({
           <ChevronLeft className="w-8 h-8 text-gray-600" />
         </button>
         <div>
-          <h2>Tanggal & Jumlah Penumpang</h2>
+          <h2>Pilih Jadwal</h2>
         </div>
       </div>
 
       {/* Date Selection */}
       <div>
-        <Card className="mb-3 shadow-none border-2 border-gray-200">
-          <p className="">
+        <Card className="mb-3 shadow-none border-2 border-primary bg-primary-light">
+          <p className="text-black font-semibold">
             Tujuan: {route.origin} → {route.destination}
           </p>
         </Card>
+
+        {/* Important Notice */}
+        <Card className="bg-warning/10 border-2 border-warning mb-4">
+          <p className="text-gray-900">
+            <strong>Penting:</strong> Pastikan tujuan sudah sesuai.
+          </p>
+        </Card>
+
         <label className="block mb-3 text-gray-900">
           Pilih Tanggal Keberangkatan
         </label>
@@ -242,7 +254,7 @@ export function ScheduleSelection({
               -
             </Button>
             <div className="flex-1 text-center">
-              <p className="text-gray-900">{passengers} Orang</p>
+              <p className="text-gray-900">{passengers}</p>
             </div>
             <Button
               variant="outline"
@@ -262,7 +274,7 @@ export function ScheduleSelection({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 mb-1">Total Harga</p>
-              <p className="text-primary">
+              <p className="text-primary font-semibold">
                 Rp {(route.price * passengers).toLocaleString('id-ID')}
               </p>
             </div>
