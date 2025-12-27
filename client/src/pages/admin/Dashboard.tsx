@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Booking, Route, Schedule } from '../../types';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import {
   LayoutDashboard,
-  Ship,
+  Map,
   Calendar,
   Ticket,
   LogOut,
@@ -15,7 +15,6 @@ import {
 import { BookingsManagement } from './bookings/BookingsManagement';
 import { RoutesManagement } from './routes/RoutesManagement';
 import { SchedulesManagement } from './schedules/SchedulesManagement';
-import { supabase, projectId } from '../../lib/supabase';
 
 interface DashboardProps {
   bookings: Booking[];
@@ -32,33 +31,10 @@ export function Dashboard({
   bookings,
   routes,
   schedules,
-  accessToken,
   onLogout,
   onRefresh,
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [freshAccessToken, setFreshAccessToken] = useState<string>(accessToken);
-
-  useEffect(() => {
-    if (activeTab === 'routes') {
-      getFreshToken()
-        .then(setFreshAccessToken)
-        .catch(() => setFreshAccessToken(''));
-    }
-  }, [activeTab]);
-
-  // Get fresh token helper
-  const getFreshToken = async (): Promise<string> => {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error || !data.session) {
-      alert('Session expired. Please login again.');
-      onLogout();
-      throw new Error('Session expired');
-    }
-
-    return data.session.access_token;
-  };
 
   // Calculate statistics
   const totalRevenue = bookings
@@ -74,7 +50,7 @@ export function Dashboard({
   const tabs = [
     { id: 'overview' as Tab, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'bookings' as Tab, label: 'Pemesanan', icon: Ticket },
-    { id: 'routes' as Tab, label: 'Rute', icon: Ship },
+    { id: 'routes' as Tab, label: 'Rute', icon: Map },
     { id: 'schedules' as Tab, label: 'Jadwal', icon: Calendar },
   ];
 
@@ -85,9 +61,9 @@ export function Dashboard({
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h2>Admin Dashboard</h2>
-            <Button size="medium" variant="outline" onClick={onLogout}>
+            <Button className='flex items-center' size="medium" variant="outline" onClick={onLogout}>
               <LogOut className="w-5 h-5 mr-2" />
-              Keluar
+              <p>Keluar</p>
             </Button>
           </div>
         </div>
@@ -176,10 +152,10 @@ export function Dashboard({
 
             {/* Recent Bookings */}
             <Card>
-              <h3 className="mb-4">Pemesanan Terbaru</h3>
+              <h3 className="mb-4">Pesanan Terbaru</h3>
               {bookings.length === 0 ? (
                 <p className="text-gray-600 text-center py-8">
-                  Belum ada pemesanan
+                  Belum ada pesanan.
                 </p>
               ) : (
                 <div className="space-y-3">
