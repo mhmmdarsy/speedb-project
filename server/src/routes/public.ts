@@ -22,7 +22,7 @@ router.get("/routes", async (_req, res) => {
 /**
  * GET /api/schedules
  */
-router.get("/schedules", async (_req, res) => {
+router.get("/admin/schedules", async (_req, res) => {
   console.log("HIT /api/schedules");
 
   const { data, error } = await supabase.from("schedules").select("*");
