@@ -109,7 +109,7 @@ router.delete("/admin/routes/:id", requireAdmin, async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  res.status(204).send();
+  res.json({ success: true });
 });
 
 export default router;

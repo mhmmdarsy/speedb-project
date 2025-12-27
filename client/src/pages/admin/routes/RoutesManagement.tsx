@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, MapPin, Clock } from 'lucide-react';
-import { supabase, projectId } from '../../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { Button } from '../../../components/Button';
 import { Card } from '../../../components/Card';
 import { Input } from '../../../components/Input';
@@ -153,9 +153,9 @@ export function RoutesManagement({ routes, onRefresh }: RoutesManagementProps) {
       <div className="flex items-center justify-between">
         <h3>Kelola Rute</h3>
         {!showForm && (
-          <Button size="medium" onClick={() => setShowForm(true)}>
+          <Button className="flex items-center" size="medium" onClick={() => setShowForm(true)}>
             <Plus className="w-5 h-5 mr-2" />
-            Tambah Rute
+            <p>Tambah Rute</p>
           </Button>
         )}
       </div>
