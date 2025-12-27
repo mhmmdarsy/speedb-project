@@ -3,15 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: oklch(0.985 0.002 247.839);
+  }
+
   * {
     @apply border-gray-200;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900;
-    font-family: Inter, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-      sans-serif;
-    /* Larger base font for readability */
+    @apply text-gray-900;
+    font-family: Inter, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: 18px;
     line-height: 1.6;
   }
