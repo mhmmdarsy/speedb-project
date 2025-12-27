@@ -110,6 +110,10 @@ export default function App() {
     setBookings(data.bookings || []);
   };
 
+  const refreshAdminData = async () => {
+    await Promise.all([fetchRoutes(), fetchSchedules(), fetchBookings()]);
+  };
+
   /* ================= ADMIN ACTIONS ================= */
   const handleAdminLogin = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -295,7 +299,7 @@ export default function App() {
               routes={routes}
               schedules={schedules}
               onLogout={handleAdminLogout}
-              onRefresh={fetchBookings}
+              onRefresh={refreshAdminData}
               accessToken={accessToken}
             />
           ) : (
