@@ -14,7 +14,7 @@ export function RouteSelection({ routes, onSelectRoute }: RouteSelectionProps) {
     <div className="space-y-4">
       <div className="text-center mb-8">
         <Ship className="w-16 h-16 mx-auto mb-4 text-primary" />
-        <h1 className="mb-2">Pesan Tiket Speedboat</h1>
+        <h1 className="mb-2">Pesan Tiket</h1>
         <p className="text-gray-600">Pilih rute perjalanan Anda</p>
       </div>
       

@@ -63,6 +63,8 @@ export function PassengerForm({
           type="button"
           onClick={onBack}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Kembali"
+          title="Kembali"
         >
           <ChevronLeft className="w-8 h-8 text-gray-600" />
         </button>
