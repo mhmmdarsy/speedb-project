@@ -17,7 +17,7 @@ export function Card({
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-md p-6 ${clickableStyles} ${className}`}
+      className={`bg-white rounded-lg shadow-md p-6 ${clickableStyles} ${className}`}
       onClick={onClick}
     >
       {children}
