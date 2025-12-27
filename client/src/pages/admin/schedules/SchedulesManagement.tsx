@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, Clock, Calendar, Users } from 'lucide-react';
-import { projectId, publicAnonKey } from '../../../lib/supabase';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../../lib/supabase';
 import { Button } from '../../../components/Button';
 import { Card } from '../../../components/Card';
 import { Input } from '../../../components/Input';
 import { Select } from '../../../components/Select';
 import type { Schedule, Route } from '../../../types';
+
+const API_BASE_URL = 'http://localhost:3000/api';
 
 interface SchedulesManagementProps {
   schedules: Schedule[];
@@ -75,10 +76,18 @@ export function SchedulesManagement({
       const token = await getFreshToken();
 
       const url = editingSchedule
-        ? `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/schedules/${editingSchedule.id}`
-        : `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/schedules`;
+        ? `${API_BASE_URL}/admin/schedules/${editingSchedule.id}`
+        : `${API_BASE_URL}/admin/schedules`;
 
       const method = editingSchedule ? 'PUT' : 'POST';
+
+      const normalizeTime = (time: string) => {
+        if (!time) return null;
+        return time.slice(0, 5); // HH:mm
+      };
+
+      console.log('RAW departureTime:', formData.departureTime);
+      console.log('NORMALIZED:', normalizeTime(formData.departureTime));
 
       const response = await fetch(url, {
         method,
@@ -87,11 +96,11 @@ export function SchedulesManagement({
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          routeId: formData.routeId,
-          date: formData.date,
-          departureTime: formData.departureTime,
-          totalSeats: parseInt(formData.totalSeats),
-          availableSeats: parseInt(formData.availableSeats),
+          route_id: formData.routeId,
+          departure_date: formData.date,
+          departure_time: normalizeTime(formData.departureTime),
+          total_seats: parseInt(formData.totalSeats),
+          available_seats: parseInt(formData.availableSeats),
         }),
       });
 
@@ -129,7 +138,7 @@ export function SchedulesManagement({
       const token = await getFreshToken();
 
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-4075ff54/admin/schedules/${scheduleId}`,
+        `${API_BASE_URL}/admin/schedules/${scheduleId}`,
         {
           method: 'DELETE',
           headers: {
@@ -160,8 +169,11 @@ export function SchedulesManagement({
     return route ? `${route.origin} → ${route.destination}` : routeId;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return '-';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+
     return date.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
@@ -174,14 +186,19 @@ export function SchedulesManagement({
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
 
+  const formatTime = (time?: string | null) => {
+    if (!time) return '-';
+    return time.slice(0, 5); // HH:mm
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3>Kelola Jadwal</h3>
         {!showForm && (
-          <Button size="medium" onClick={() => setShowForm(true)}>
+          <Button className="flex items-center" size="medium" onClick={() => setShowForm(true)}>
             <Plus className="w-5 h-5 mr-2" />
-            Tambah Jadwal
+            <p>Tambah Jadwal</p>
           </Button>
         )}
       </div>
@@ -306,7 +323,7 @@ export function SchedulesManagement({
                       <div>
                         <p className="text-sm text-gray-600">Jam</p>
                         <p className="text-gray-900">
-                          {schedule.departureTime}
+                          {formatTime(schedule.departureTime)}
                         </p>
                       </div>
                     </div>
