@@ -1,16 +1,13 @@
-import express from 'express';
-import cors from 'cors';
+import "dotenv/config";
+import { app } from "./app";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
-app.use(cors());
-app.use(express.json());
-
-app.get('/', (req, res) => {
-  res.send('Server is running');
+console.log("ENV CHECK:", {
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  HAS_SERVICE_ROLE: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`API running at http://localhost:${PORT}`);
 });
