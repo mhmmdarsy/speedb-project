@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Route, Schedule } from '../../types';
+import type { Route, Schedule } from '../../types';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Clock, Users, Calendar, ChevronLeft } from 'lucide-react';

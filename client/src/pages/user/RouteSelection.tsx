@@ -1,4 +1,4 @@
-import { Route } from '../../types';
+import type { Route } from '../../types';
 import { Card } from '../../components/Card';
 import { Ship, Clock, MapPin } from 'lucide-react';
 

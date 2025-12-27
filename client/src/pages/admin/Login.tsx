@@ -22,8 +22,8 @@ export function Login({ onLogin, onRegisterClick }: LoginProps) {
 
     try {
       await onLogin(email, password);
-    } catch (err: any) {
-      setError(err.message || 'Login gagal. Periksa email dan password Anda.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

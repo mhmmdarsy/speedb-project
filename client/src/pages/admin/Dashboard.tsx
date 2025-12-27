@@ -15,8 +15,7 @@ import {
 import { BookingsManagement } from './bookings/BookingsManagement';
 import { RoutesManagement } from './routes/RoutesManagement';
 import { SchedulesManagement } from './schedules/SchedulesManagement';
-import { createClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from '../../lib/supabase';
+import { supabase, projectId } from '../../lib/supabase';
 
 interface DashboardProps {
   bookings: Booking[];
@@ -50,11 +49,6 @@ export function Dashboard({
 
   // Get fresh token helper
   const getFreshToken = async (): Promise<string> => {
-    const supabase = createClient(
-      `https://${projectId}.supabase.co`,
-      publicAnonKey,
-    );
-
     const { data, error } = await supabase.auth.getSession();
 
     if (error || !data.session) {
@@ -239,18 +233,13 @@ export function Dashboard({
         {activeTab === 'bookings' && <BookingsManagement bookings={bookings} />}
 
         {activeTab === 'routes' && (
-          <RoutesManagement
-            routes={routes}
-            accessToken={freshAccessToken}
-            onRefresh={onRefresh}
-          />
+          <RoutesManagement routes={routes} onRefresh={onRefresh} />
         )}
 
         {activeTab === 'schedules' && (
           <SchedulesManagement
             schedules={schedules}
             routes={routes}
-            accessToken={accessToken}
             onRefresh={onRefresh}
           />
         )}
