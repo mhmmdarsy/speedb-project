@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Route, Schedule } from '../../types';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
-import { Clock, Users, Calendar, ChevronLeft } from 'lucide-react';
+import { Clock, Users, ChevronLeft } from 'lucide-react';
 
 interface ScheduleSelectionProps {
   route: Route;
@@ -51,6 +51,8 @@ export function ScheduleSelection({ route, schedules, onSelectSchedule, onBack }
         <button
           onClick={onBack}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          type="button"
+          aria-label="Kembali"
         >
           <ChevronLeft className="w-8 h-8 text-gray-600" />
         </button>
