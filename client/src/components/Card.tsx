@@ -1,19 +1,20 @@
-import React from "react";
-
 interface CardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  interactive?: boolean;
 }
 
 export function Card({
   children,
   className = "",
   onClick,
+  interactive = true,
 }: CardProps) {
-  const clickableStyles = onClick
-    ? "cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-200 active:scale-95"
-    : "";
+  const clickableStyles =
+    onClick && interactive
+      ? "cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-200 active:scale-95"
+      : "";
 
   return (
     <div
