@@ -89,16 +89,17 @@ export function ScheduleSelection({
           <ChevronLeft className="w-8 h-8 text-gray-600" />
         </button>
         <div>
-          <h2>Pilih Jadwal & Penumpang</h2>
-          <p className="text-gray-600">
-            {route.origin} → {route.destination}
-          </p>
+          <h2>Tanggal & Jumlah Penumpang</h2>
         </div>
       </div>
 
       {/* Date Selection */}
-
       <div>
+        <Card className="mb-3 shadow-none border-2 border-gray-200">
+          <p className="">
+            Tujuan: {route.origin} → {route.destination}
+          </p>
+        </Card>
         <label className="block mb-3 text-gray-900">
           Pilih Tanggal Keberangkatan
         </label>
